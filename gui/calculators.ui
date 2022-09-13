@@ -119,8 +119,7 @@ QPushButton:pressed {
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">font: 10pt &quot;Segoe UI&quot;; color: rgb(0, 57, 90)
-</string>
+            <string notr="true">font: 10pt &quot;Segoe UI&quot;; color: rgb(0, 57, 90)</string>
            </property>
            <property name="text">
             <string/>
@@ -611,7 +610,7 @@ QPushButton:pressed {
          <item>
           <widget class="QPushButton" name="calculate_button">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -653,7 +652,7 @@ QPushButton:pressed {
          <item>
           <widget class="QPushButton" name="save_calc_button">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
