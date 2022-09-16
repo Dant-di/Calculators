@@ -608,7 +608,7 @@ QPushButton:pressed {
           <number>20</number>
          </property>
          <item>
-          <widget class="QPushButton" name="calculate_button">
+          <widget class="QPushButton" name="calculate_button_inks">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -650,7 +650,7 @@ QPushButton:pressed {
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="save_calc_button">
+          <widget class="QPushButton" name="save_calc_button_inks">
            <property name="enabled">
             <bool>true</bool>
            </property>
