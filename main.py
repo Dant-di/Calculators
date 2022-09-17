@@ -1,32 +1,30 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
+import numpy as np
 import sys
 from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QDialog, QApplication, QWidget, QFileDialog
+from PyQt5.QtWidgets import QDialog, QApplication, QWidget, QFileDialog, QHeaderView
+from PyQt5.QtCore import Qt
 from pathlib import Path
 
+
+
+# class for main window interface
 class MainWindow(QDialog):
     def __init__(self):
         super(MainWindow, self).__init__()
-
         self.initUIinkCoverage()
 
+
+# Initialize and tweak ink coverage tab features
     def initUIinkCoverage(self):
         loadUi("gui/calculators.ui", self)
 
         self.w = None
 
-
-        self.header = self.tableWidget.horizontalHeader()
-        self.header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        self.header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        self.header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        self.header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-
         self.exit_button.clicked.connect(exit)
         self.open_button.clicked.connect(self.open_file_inks)
-
 
         self.calculate_button_inks.clicked.connect(self.calculate_inks)
         self.save_calc_button_inks.clicked.connect(self.save_calculations_inks)
@@ -34,11 +32,28 @@ class MainWindow(QDialog):
         self.add_td_button.clicked.connect(self.add_td)
 
 
+        self.technical_drawing.currentTextChanged.connect(self.display_net_area)
+        # TODO elaborate on change value in the field basing on selected TD
+
+
+
+    def display_net_area(self):
+        self.net_area.setText(self.technical_drawing.currentText())
 
 
     def open_file_inks(self):
-    #TODO reset key varaibles for error checking
 
+        #clean up variables for error checking
+        self.fname = None
+        self.net_area.setText("")
+        self.load_message.setText("")
+        self.df_fixed = pd.DataFrame(columns=['Name', 'Value', 'Percentage '])
+        self.model = TableModel(self.df_fixed)
+        self.result_table_inks.setModel(self.model)
+        self.calculated_flag = False
+
+
+        # take the path
         home_dir = str(Path().absolute())
         self.fname = QFileDialog.getOpenFileName(self, "Open Ink Coverage file", home_dir)
         self.filename = self.fname[0].split("/")[-1]
@@ -62,22 +77,44 @@ class MainWindow(QDialog):
                               attrs_only=True, parser='etree')
             df = pd.concat([df1, df2.drop(columns=['Unit'])], axis=1).astype({'Value': float}, errors="raise")
             df['Percentage'] = df['Value'] / float(self.net_area.text())
+            df['Value'] = df['Value'].map('{:.2f}'.format)
+            df['Percentage'] = df['Percentage'].map('{:.2f}%'.format)
+
             self.df_fixed = df.set_axis([x + 1 for x in range(len(df))], axis=0)
-            self.df_styled = self.df_fixed.style.format({'Value': "{:.2f}", 'Percentage': "{:.2f}%"})
-            print(self.df_styled.data)
-        #TODO solve formatting isssue with data from df
-        #TODO implement showing the table in the main wndow after calculation
+
+            print(self.df_fixed)
+
+            self.model = TableModel(self.df_fixed)
+            self.result_table_inks.setModel(self.model)
+            self.result_table_inks.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+            self.calculated_flag = True
+            print(self.result_table_inks)
 
 
-    def save_calculations_inks(self, message):
-    #ToDO add erroro catcher and add save dialog
-        self.df_styled.to_excel(self.filename.split(".")[0] + '.xlsx')
+
+    def save_calculations_inks(self):
+
+        message = "You need to calculate first before saving!"
+        if self.net_area.text() == "" and self.load_message.text() == "":
+            self.error_handler_inks(message)
+        elif self.net_area.text() == "":
+            self.error_handler_inks(message)
+        elif self.load_message.text() == "":
+            self.error_handler_inks(message)
+        elif self.calculated_flag == False:
+            self.error_handler_inks(message)
+        else:
+            home_dir = str(Path().absolute())
+            fname = QFileDialog.getSaveFileName(self, "Save calculations", home_dir + '\\' + self.filename.split(".")[0] + '.xlsx', "Excel files (*.xlsx)")
+            if fname:
+                self.df_fixed.to_excel(fname[0])
 
 
     def add_td(self, checked):
         if self.w is None:
             self.w = AddTd()
         self.w.show()
+    #TODO add functionality to add TD in the TD database
 
 
     def error_handler_inks(self, message):
@@ -87,13 +124,13 @@ class MainWindow(QDialog):
         dlg.exec()
 
 
-
-
 class AddTd(QWidget):
     def __init__(self):
         super(AddTd, self).__init__()
         loadUi("gui/add_td.ui", self)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+
 
 class ErrorWindow(QDialog):
     def __init__(self, parent = None):
@@ -103,6 +140,35 @@ class ErrorWindow(QDialog):
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
+
+class TableModel(QtCore.QAbstractTableModel):
+
+    def __init__(self, data):
+        super(TableModel, self).__init__()
+        self._data = data
+
+    def data(self, index, role):
+
+        if role == Qt.DisplayRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return str(value)
+
+
+
+    def rowCount(self, index):
+        return self._data.shape[0]
+
+    def columnCount(self, index):
+        return self._data.shape[1]
+
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Vertical:
+                return str(self._data.index[section])
 
 
 

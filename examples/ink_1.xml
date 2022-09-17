@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InkCoverage File="S5-019818-HL-Chesterf-Black_PT04-L20-kor05-40.9E8H.pdf" Page="1">
+  <Inks>
+    <Ink Name="Black">
+      <Coverage Value="92190.71435" Unit="mm2"/>
+      <CoveragePerc Value="18.47657412" Unit="%"/>
+    </Ink>
+    <Ink Name="Cyan">
+      <Coverage Value="30555.70573" Unit="mm2"/>
+      <CoveragePerc Value="6.123878807" Unit="%"/>
+    </Ink>
+    <Ink Name="Magenta">
+      <Coverage Value="38614.07589" Unit="mm2"/>
+      <CoveragePerc Value="7.738912106" Unit="%"/>
+    </Ink>
+    <Ink Name="Yellow">
+      <Coverage Value="44523.11585" Unit="mm2"/>
+      <CoveragePerc Value="8.923183382" Unit="%"/>
+    </Ink>
+    <Ink Name="Dark Grey">
+      <Coverage Value="33208.08251" Unit="mm2"/>
+      <CoveragePerc Value="6.655459851" Unit="%"/>
+    </Ink>
+    <Ink Name="Grey Pearlescent">
+      <Coverage Value="101427.9802" Unit="mm2"/>
+      <CoveragePerc Value="20.327878" Unit="%"/>
+    </Ink>
+    <Ink Name="Black_Coding Area">
+      <Coverage Value="9242.777084" Unit="mm2"/>
+      <CoveragePerc Value="1.852408424" Unit="%"/>
+    </Ink>
+    <Ink Name="Grey II">
+      <Coverage Value="14288.77302" Unit="mm2"/>
+      <CoveragePerc Value="2.863711119" Unit="%"/>
+    </Ink>
+    <Ink Name="PROOFDIECAD">
+      <Coverage Value="5474.039259" Unit="mm2"/>
+      <CoveragePerc Value="1.097089797" Unit="%"/>
+    </Ink>
+    <Ink Name="PROOFPAPER">
+      <Coverage Value="1429.132116" Unit="mm2"/>
+      <CoveragePerc Value="0.2864221809" Unit="%"/>
+    </Ink>
+  </Inks>
+</InkCoverage>
