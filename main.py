@@ -1,6 +1,6 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
-import numpy as np
+import json
 import sys
 from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
@@ -32,13 +32,24 @@ class MainWindow(QDialog):
         self.add_td_button.clicked.connect(self.add_td)
 
 
-        self.technical_drawing.currentTextChanged.connect(self.display_net_area)
-        # TODO elaborate on change value in the field basing on selected TD
+        with open('resource/td.json') as td:
+            self.td_db = json.load(td)
+
+        self.td_list = list(self.td_db.keys())
+
+        for option in self.td_list:
+            self.technical_drawing.addItem(option)
+
+
+        # self.technical_drawing.currentTextChanged.connect(self.display_net_area)
+        self.technical_drawing.currentIndexChanged.connect(self.display_net_area)
+
 
 
 
     def display_net_area(self):
-        self.net_area.setText(self.technical_drawing.currentText())
+        area = self.td_db.get(self.technical_drawing.currentText())
+        self.net_area.setText(str(area.get("Area")))
 
 
     def open_file_inks(self):
@@ -114,6 +125,8 @@ class MainWindow(QDialog):
         if self.w is None:
             self.w = AddTd()
         self.w.show()
+
+
     #TODO add functionality to add TD in the TD database
 
 
@@ -128,8 +141,15 @@ class AddTd(QWidget):
     def __init__(self):
         super(AddTd, self).__init__()
         loadUi("gui/add_td.ui", self)
+        self.add_td_button.clicked.connect(lambda: self.close()) #TODO move into function to close window after saving data
+        self.area_input.editingFinished.connect(self.add_value)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
+        # TODO create function to check the mandatory fields
+
+    def add_value(self):
+        net_area = float(self.area_input.text()) * 100
+        self.net_area_input.setText(str(net_area))
 
 
 class ErrorWindow(QDialog):

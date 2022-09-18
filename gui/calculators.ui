@@ -457,21 +457,6 @@ QPushButton:pressed {
              <string/>
             </property>
            </item>
-           <item>
-            <property name="text">
-             <string>TD-HL4183-12</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>TD-HL4183-14</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>TD-HL4073-11</string>
-            </property>
-           </item>
           </widget>
          </item>
          <item>
