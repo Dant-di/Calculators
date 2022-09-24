@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import xml.etree.ElementTree as ET
 import json
@@ -72,15 +73,16 @@ class MainWindow(QDialog):
 
 
     def calculate_inks(self):
+        self.error_label.setText("")
         if self.net_area.text() == "" and self.load_message.text() == "":
             message = "Select file first and indicate either TD or TD's net area!"
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         elif self.net_area.text() == "":
             message = "Indicate either TD or TD's net area!"
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         elif self.load_message.text() == "":
             message = 'Select file first!'
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         else:
             df1 = pd.read_xml(self.fname[0], xpath='Inks/Ink',
                               attrs_only=True, parser='etree')
@@ -104,21 +106,25 @@ class MainWindow(QDialog):
 
 
     def save_calculations_inks(self):
+        self.error_label.setText("")
 
         message = "You need to calculate first before saving!"
         if self.net_area.text() == "" and self.load_message.text() == "":
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         elif self.net_area.text() == "":
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         elif self.load_message.text() == "":
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         elif self.calculated_flag == False:
-            self.error_handler_inks(message)
+            self.error_label_display(message)
         else:
             home_dir = str(Path().absolute())
             fname = QFileDialog.getSaveFileName(self, "Save calculations", home_dir + '\\' + self.filename.split(".")[0] + '.xlsx', "Excel files (*.xlsx)")
             if fname:
-                self.df_fixed.to_excel(fname[0])
+                try:
+                    self.df_fixed.to_excel(fname[0])
+                except:
+                    self.error_handler_inks("File hasn't been saved")
 
 
     def add_td(self, checked):
@@ -129,6 +135,9 @@ class MainWindow(QDialog):
 
     #TODO add functionality to add TD in the TD database
 
+
+    def error_label_display(self, message):
+        self.error_label.setText(message)
 
     def error_handler_inks(self, message):
         dlg = ErrorWindow(self)
@@ -141,15 +150,44 @@ class AddTd(QWidget):
     def __init__(self):
         super(AddTd, self).__init__()
         loadUi("gui/add_td.ui", self)
-        self.add_td_button.clicked.connect(lambda: self.close()) #TODO move into function to close window after saving data
-        self.area_input.editingFinished.connect(self.add_value)
+        # self.add_td_button.clicked.connect(lambda: self.close()) #TODO move into function to close window after saving data
+        self.add_td_button.clicked.connect(self.add_td_data)
+        self.area_input.editingFinished.connect(self.add_net_area_value)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
-        # TODO create function to check the mandatory fields
 
-    def add_value(self):
+
+    def add_net_area_value(self):
         net_area = float(self.area_input.text()) * 100
         self.net_area_input.setText(str(net_area))
+
+    def add_td_data(self):
+
+        self.mandatory_fields.setText("")
+        with open('resource/td.json') as td:
+            self.td_db = json.load(td)
+
+        self.td_list = list(self.td_db.keys())
+
+        mandatory_fields_list = [self.td_name_input.text(), self.height_input.text(), self.width_input.text(), self.area_input.text()]
+
+        r = re.compile('TD-[A-Z][A-Z]+[0-9][0-9][0-9][0-9]+-+[0-9][0-9]')
+
+        if self.td_name_input.text() in self.td_list:
+            self.mandatory_fields.setText("TD name already exists")
+
+        elif "" in mandatory_fields_list:
+            self.mandatory_fields.setText("Mandatory fields cannot be blank")
+
+        elif r.match(self.td_name_input.text()) is None:
+            self.mandatory_fields.setText("Incorrect TD name format")
+            print(self.td_name_input.text())
+
+        else:
+            pass
+
+
+
 
 
 class ErrorWindow(QDialog):
@@ -172,8 +210,6 @@ class TableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
-
-
 
     def rowCount(self, index):
         return self._data.shape[0]
