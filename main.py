@@ -6,7 +6,7 @@ import sys
 from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QDialog, QApplication, QWidget, QFileDialog, QHeaderView
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from pathlib import Path
 
 
@@ -20,11 +20,11 @@ class MainWindow(QDialog):
 
 # Initialize and tweak ink coverage tab features
     def initUIinkCoverage(self):
-        loadUi("gui/calculators.ui", self)
+        loadUi("gui/calculators_v2.ui", self)
 
         self.w = None
 
-        self.exit_button.clicked.connect(exit)
+        self.exit_button_inks.clicked.connect(exit)
         self.open_button.clicked.connect(self.open_file_inks)
 
         self.calculate_button_inks.clicked.connect(self.calculate_inks)
@@ -33,24 +33,33 @@ class MainWindow(QDialog):
         self.add_td_button.clicked.connect(self.add_td)
 
 
-        with open('resource/td.json') as td:
+        self.get_td_values()
+
+
+        self.technical_drawing.currentIndexChanged.connect(self.display_net_area)
+
+
+
+    def get_td_values(self):
+        self.technical_drawing.clear()
+        self.technical_drawing.addItem("")
+
+        with open('resource/td.json', 'r') as td:
             self.td_db = json.load(td)
 
         self.td_list = list(self.td_db.keys())
 
-        for option in self.td_list:
-            self.technical_drawing.addItem(option)
-
-
-        # self.technical_drawing.currentTextChanged.connect(self.display_net_area)
-        self.technical_drawing.currentIndexChanged.connect(self.display_net_area)
-
+        for key in self.td_list:
+            self.technical_drawing.addItem(key)
 
 
 
     def display_net_area(self):
         area = self.td_db.get(self.technical_drawing.currentText())
-        self.net_area.setText(str(area.get("Area")))
+        if area is None:
+            self.net_area.setText("")
+        else:
+            self.net_area.setText(str(area.get("Area")))
 
 
     def open_file_inks(self):
@@ -127,13 +136,15 @@ class MainWindow(QDialog):
                     self.error_handler_inks("File hasn't been saved")
 
 
-    def add_td(self, checked):
-        if self.w is None:
-            self.w = AddTd()
-        self.w.show()
+    def add_td(self):
+        # if self.w is None:
+        #     self.w = AddTd()
+        # self.w.show()
+        add_td = AddTd()
+        add_td.exec()
+        self.get_td_values()
 
 
-    #TODO add functionality to add TD in the TD database
 
 
     def error_label_display(self, message):
@@ -146,15 +157,17 @@ class MainWindow(QDialog):
         dlg.exec()
 
 
-class AddTd(QWidget):
+class AddTd(QDialog):
+# class AddTd(QWidget):
     def __init__(self):
         super(AddTd, self).__init__()
-        loadUi("gui/add_td.ui", self)
-        # self.add_td_button.clicked.connect(lambda: self.close()) #TODO move into function to close window after saving data
+        loadUi("gui/add_td_v2.ui", self)
+
+
+
         self.add_td_button.clicked.connect(self.add_td_data)
         self.area_input.editingFinished.connect(self.add_net_area_value)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
-
 
 
     def add_net_area_value(self):
@@ -164,7 +177,7 @@ class AddTd(QWidget):
     def add_td_data(self):
 
         self.mandatory_fields.setText("")
-        with open('resource/td.json') as td:
+        with open('resource/td.json', 'r') as td:
             self.td_db = json.load(td)
 
         self.td_list = list(self.td_db.keys())
@@ -180,13 +193,15 @@ class AddTd(QWidget):
             self.mandatory_fields.setText("Mandatory fields cannot be blank")
 
         elif r.match(self.td_name_input.text()) is None:
-            self.mandatory_fields.setText("Incorrect TD name format")
+            self.mandatory_fields.setText("Incorrect TD name format. Please follow: 'TD-XX1234-56'")
             print(self.td_name_input.text())
 
         else:
-            pass
+            self.td_db[self.td_name_input.text()] = {"Description": self.description_input.text(), "Lifecycle Phase": "", "Height": self.height_input.text(), "Width": self.width_input.text(), "Length 3D": self.length_3d_input.text(), "Width 3D": self.width_3d_input.text(), "Height 3D": self.height_3d_input.text(), "Area [cm2]": self.area_input.text(), "Cigarette Length Category": self.cig_length_cat_input.text(), "Cigarette Length [mm]": self.cig_length_input.text(), "Cigarettes per Item": self.cig_per_item_input.text(), "Pack Type": self.pack_type_input.text(), "Thickness Category": self.thick_cat_input.text(), "Nesting": self.nesting_input.text(), "Area": self.net_area_input.text()}
+            with open('resource/td.json', 'w') as td_file_write:
+                json.dump(self.td_db, td_file_write, sort_keys=True)
 
-
+            self.close()
 
 
 
