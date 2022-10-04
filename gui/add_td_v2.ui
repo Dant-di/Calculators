@@ -19,7 +19,7 @@
   <property name="styleSheet">
    <string notr="true">background-color: rgb(215, 235, 248);</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -1311,6 +1311,48 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancel_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>999999</width>
+          <height>999999</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+     border: 1px solid #ffffff;
+	background-color: #f5f5f5;
+	font: 10pt &quot;Segoe UI&quot;; color: rgb(0, 57, 90)
+}
+
+QPushButton:hover {
+	background-color: #ffffff;
+	font: 10pt &quot;Segoe UI&quot;; color: rgb(0, 57, 90)
+}
+
+QPushButton:pressed {
+     background-color: #AFD8F2;
+	font: 10pt &quot;Segoe UI&quot;; color: rgb(0, 57, 90)
+}</string>
+        </property>
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="add_td_button">
