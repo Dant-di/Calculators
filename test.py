@@ -1,38 +1,93 @@
-# import json
-#
-# with open('test_td.json', 'r') as td_file:
-#     td_db = json.load(td_file)
-#
-#
-# td_db['TD-HL4183-16'] = {"Description": "", "Lifecycle Phase": "","Height": 292.0,"Width": 301.1, "Length 3D": 100.9,"Width 3D": 229.5, "Height 3D": 37.3, "Area [cm2]": 772.35, "Cigarette Length Category": "100'S - 100", "Cigarette Length [mm]": 97, "Cigarettes per Item": 200.0, "Pack Type": "ROUND CORNER BOX - RCB", "Thickness Category": "EXTRA SLIMS - XSL", "Nesting": "", "Area": 77235.0}
-#
-# print(td_db['TD-HL4183-16'])
-#
-# with open('test_td.json', 'w') as td_file_write:
-#     json.dump(td_db, td_file_write, sort_keys=True)
-
-import openpyxl
+import mysql.connector
+import sshtunnel
 import pandas as pd
+import pymysql
+from sshtunnel import SSHTunnelForwarder
+from mysql.connector import Error
+import logging
 
-params = {'a' : 1,
-          'b' : 2,
-          'c' : 3
-          }
+MySQL_hostname = 'localhost'
+sql_username = 'dant'
+sql_password = '!CS05tirepc'
+sql_main_database = 'pd'
+sql_port = 3306
+ssh_host = '192.168.1.121'
+ssh_user = 'dant'
+ssh_password = '!CS05tirepc'
+ssh_port = 22
 
-col=[""]
-
-df = pd.DataFrame.from_dict(params, orient='index', columns=col)
-
-print(df)
 
 
-# import re
-# td = 'TD-HL4183-1'
-#
-# r = re.compile('TD-[A-Z][A-Z]+[0-9][0-9][0-9][0-9]+-+[0-9][0-9]')
-#
-# if r.match(td) is not None:
-#     print("Yeah baby")
-# else:
-#     print("Something is wrong")
+def open_ssh_tunnel(verbose=False):
 
+    if verbose:
+        sshtunnel.DEFAULT_LOGLEVEL = logging.DEBUG
+
+    global tunnel
+    tunnel = SSHTunnelForwarder(
+        (ssh_host, 22),
+        ssh_username=ssh_user,
+        ssh_password=ssh_password,
+        remote_bind_address=('127.0.0.1', 3306)
+    )
+
+    tunnel.start()
+
+
+def mysql_connect():
+
+    global connection
+
+    connection = pymysql.connect(
+        host='127.0.0.1',
+        user=sql_username,
+        passwd=sql_password,
+        db=sql_main_database,
+        port=tunnel.local_bind_port
+    )
+
+
+def fetch_data(sql):
+    """Runs a given SQL query via the global database connection.
+
+    :param sql: MySQL query
+    :return: Pandas dataframe containing results
+    """
+
+    return pd.read_sql_query(sql, connection)
+
+
+def mysql_disconnect():
+    """Closes the MySQL database connection.
+    """
+
+    connection.close()
+
+
+def close_ssh_tunnel():
+    """Closes the SSH tunnel connection.
+    """
+
+    tunnel.close
+
+
+open_ssh_tunnel()
+mysql_connect()
+df = fetch_data("SELECT * FROM boards")
+print(df.tail())
+
+insert_boards_query = """
+INSERT INTO boards (name, grammage, width, supplier_id)
+VALUES ('New Name', '666', '820', '16')
+"""
+
+with connection.cursor() as cursor:
+
+    cursor.execute(insert_boards_query)
+    connection.commit()
+
+df = fetch_data("SELECT * FROM boards")
+print(df.tail())
+
+mysql_disconnect()
+close_ssh_tunnel()
